@@ -70,7 +70,7 @@ export default function AuthForm() {
                   value={formData.username}
                   onChange={handleChange}
                   required={isRegister}
-                  className="pl-10 bg-neutral-900/70 border-neutral-800 text-white placeholder:text-neutral-500  focus-visible:ring-neutral-700 focus-visible:border-neutral-600 h-11 rounded-xl"
+                  className="pl-10  bg-neutral-900/70 border-neutral-800 text-white placeholder:text-neutral-500  focus-visible:ring-neutral-700 focus-visible:border-neutral-600 h-11 rounded-xl"
                 />
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function AuthForm() {
           >
             <Button
               type="submit"
-              className="w-full h-11 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-100 border border-neutral-700/80 font-semibold transition-all flex items-center justify-center gap-2"
+              className="w-full h-11 cursor-pointer rounded-xl bg-card/60 hover:bg-card/10 text-neutral-100 border border-neutral-700/80 font-semibold transition-all flex items-center justify-center gap-2 hover:gap-4"
             >
               {isRegister ? "Register" : "Sign In"}
               <ArrowRight className="w-4 h-4" />
@@ -172,28 +172,30 @@ export default function AuthForm() {
         </form>
 
         {/* Left-Aligned Bottom Mode Switcher */}
-        <div className="mt-6 text-left text-xs sm:text-sm text-neutral-400">
+        <div className="mt-6 text-left text-xs sm:text-sm text-neutral-400  ">
           {isRegister ? (
             <>
               Already have an account?{" "}
-              <button
+              <motion.button
+                whileHover={{ x: 10, opacity: 0.7 }}
                 type="button"
                 onClick={() => setMode("login")}
-                className="text-neutral-200 hover:text-white font-medium underline underline-offset-4 transition-colors"
+                className="text-neutral-200 cursor-pointer font-medium underline underline-offset-4 transition-colors"
               >
                 Sign In
-              </button>
+              </motion.button>
             </>
           ) : (
             <>
               Don&apos;t have an account?{" "}
-              <button
+              <motion.button
+                whileHover={{ x: 10, opacity: 0.7 }}
                 type="button"
                 onClick={() => setMode("register")}
-                className="text-neutral-200 hover:text-white font-medium underline underline-offset-4 transition-colors"
+                className="text-neutral-200 cursor-pointer font-medium underline underline-offset-4 transition-colors"
               >
                 Create account
-              </button>
+              </motion.button>
             </>
           )}
         </div>

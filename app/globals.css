@@ -47,20 +47,23 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Custom Sad Novel Utility Classes */
+  /* Custom  */
   --color-bg-cold: var(--bg-cold);
   --color-text-cold: var(--text-cold);
   --color-bg-tragic: var(--bg-tragic);
   --color-text-tragic: var(--text-tragic);
   --color-bg-melancholy: var(--bg-melancholy);
   --color-text-melancholy: var(--text-melancholy);
+  --color-dark-blue: var(--text-dark-blue);
+  --color-light-blue: var(--text-light-blue);
 }
 
 :root {
   /* 1. Cold Isolation (Abyssal Navy) */
   --bg-cold: oklch(0.1 0.02 260);
   --text-cold: oklch(0.92 0.01 260);
-
+  --text-dark-blue: oklch(0.12 0.06 260);
+  --text-light-blue: oklch(0.5 0.2 220);
   /* 2. Tragic Heartbreak (Obsidian Crimson) */
   --bg-tragic: oklch(0.08 0.03 20);
   --text-tragic: oklch(0.94 0.01 20);
@@ -74,7 +77,7 @@
   --foreground: var(--text-cold);
   --card: oklch(0.15 0.02 260);
   --card-foreground: var(--text-cold);
-  --popover: oklch(0.15 0.02 260);
+  --popover: oklch(0.1 0.02 260);
   --popover-foreground: var(--text-cold);
   --primary: oklch(0.85 0.03 260);
   --primary-foreground: oklch(0.12 0.02 260);
