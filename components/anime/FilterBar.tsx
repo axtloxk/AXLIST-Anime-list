@@ -14,44 +14,44 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { FilterType, SortType } from "@/lib/api"; // Import shared types directly from API
 
-type AnimeType = "all" | "tv" | "movie";
-type SortOption = "popular" | "newest";
-
-const TYPE_LABELS: Record<AnimeType, string> = {
+const TYPE_LABELS: Record<FilterType, string> = {
   all: "All",
   tv: "TV Series",
   movie: "Movies",
 };
 
-const SORT_LABELS: Record<SortOption, string> = {
+const SORT_LABELS: Record<SortType, string> = {
   popular: "Most Popular",
   newest: "Newest Anime",
 };
 
 interface FilterBarProps {
-  onTypeChange?: (type: AnimeType) => void;
-  onSortChange?: (sort: SortOption) => void;
+  currentType: FilterType;
+  currentSort: SortType;
+  onTypeChange?: (type: FilterType) => void;
+  onSortChange?: (sort: SortType) => void;
 }
 
-const FilterBar = ({ onTypeChange, onSortChange }: FilterBarProps) => {
-  const [type, setType] = useState<AnimeType>("all");
-  const [sort, setSort] = useState<SortOption>("popular");
-
+const FilterBar = ({
+  currentType,
+  currentSort,
+  onTypeChange,
+  onSortChange,
+}: FilterBarProps) => {
   // Track the open state for each dropdown menu
   const [typeOpen, setTypeOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
   const handleTypeChange = (value: string) => {
-    const next = value as AnimeType;
-    setType(next);
+    const next = value as FilterType;
     onTypeChange?.(next);
     setTypeOpen(false); // Closes the Type dropdown
   };
 
   const handleSortChange = (value: string) => {
-    const next = value as SortOption;
-    setSort(next);
+    const next = value as SortType;
     onSortChange?.(next);
     setSortOpen(false); // Closes the Sort dropdown
   };
@@ -72,7 +72,7 @@ const FilterBar = ({ onTypeChange, onSortChange }: FilterBarProps) => {
               className="gap-2 cursor-pointer border-border/60 bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground"
             >
               <ListFilter className="h-4 w-4 text-muted-foreground" />
-              {TYPE_LABELS[type]}
+              {TYPE_LABELS[currentType]}
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </Button>
           }
@@ -82,7 +82,7 @@ const FilterBar = ({ onTypeChange, onSortChange }: FilterBarProps) => {
             <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup
-              value={type}
+              value={currentType}
               onValueChange={handleTypeChange}
             >
               <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
@@ -106,7 +106,7 @@ const FilterBar = ({ onTypeChange, onSortChange }: FilterBarProps) => {
               className="gap-2 cursor-pointer border-border/60 bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground"
             >
               <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-              {SORT_LABELS[sort]}
+              {SORT_LABELS[currentSort]}
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </Button>
           }
@@ -116,7 +116,7 @@ const FilterBar = ({ onTypeChange, onSortChange }: FilterBarProps) => {
             <DropdownMenuLabel>Sort by</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup
-              value={sort}
+              value={currentSort}
               onValueChange={handleSortChange}
             >
               <DropdownMenuRadioItem value="popular">

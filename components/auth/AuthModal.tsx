@@ -2,10 +2,20 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Eye, EyeOff, Lock, Mail, User, ArrowRight } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  User,
+  ArrowRight,
+  MoveLeft,
+  ArrowLeft,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 export default function AuthForm() {
   const [mode, setMode] = useState<"register" | "login">("login");
@@ -30,6 +40,21 @@ export default function AuthForm() {
   return (
     <div className=" w-full flex items-center justify-center p-4 relative overflow-hidden">
       {/* Main Form Container */}
+      <motion.nav
+        className="fixed top-4 left-8"
+        whileHover={{ scale: 1.05, y: -1 }}
+        whileTap={{ scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+      >
+        <Link
+          href="/"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors leading-none"
+        >
+          <ArrowLeft />
+        </Link>
+      </motion.nav>{" "}
       <motion.div
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
