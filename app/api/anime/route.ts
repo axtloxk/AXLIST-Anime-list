@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const filterType = searchParams.get("type") || "all";
   const sortParam = searchParams.get("sort") || "popular";
   const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "12");
+  const limit = parseInt(searchParams.get("limit") || "25");
 
   // 1. Map your frontend sorts/types to AniList GraphQL Enums
   let sortEnum = "POPULARITY_DESC";

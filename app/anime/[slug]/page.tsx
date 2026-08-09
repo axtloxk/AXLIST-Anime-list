@@ -31,9 +31,10 @@ export default async function AnimeDetailsPage({
             fill
             className="object-cover"
             priority // Use priority here since the hero image is above the fold
+            sizes="(max-width: 768px) 100vw, 300px"
           />
 
-          <div className="absolute inset-0 bg-linaer-to-t from-zinc-950 via-zinc-950/20 to-zinc-950/40 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-zinc-950/40 pointer-events-none" />
 
           {/* Top: Episodes */}
           <div className="absolute top-3 left-3 rounded-md bg-zinc-950/80 px-2 py-1 text-xs font-mono tracking-wider text-zinc-300 backdrop-blur-md">
@@ -61,10 +62,10 @@ export default async function AnimeDetailsPage({
         <div className="flex flex-col gap-8">
           {/* Synopsis Section */}
           <section>
-            <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
               {anime.titleEnglish || anime.title}
             </h1>
-            <p className="text-zinc-400 leading-relaxed text-base md:text-lg">
+            <p className="text-zinc-400 leading-relaxed text-base md:text-[19px]">
               {anime.synopsis}
             </p>
           </section>
@@ -94,7 +95,7 @@ export default async function AnimeDetailsPage({
             <div className="flex flex-col gap-1 sm:col-span-2 mt-2">
               <span className="text-zinc-500 font-medium mb-1">Genres</span>
               <div className="flex flex-wrap gap-2">
-                {anime.genres?.map((genre) => (
+                {anime.genres?.map((genre: string) => (
                   <span
                     key={genre}
                     className="px-3 py-1 bg-zinc-800/50 rounded-full text-xs font-medium text-zinc-300"
@@ -112,7 +113,7 @@ export default async function AnimeDetailsPage({
 
             {/* Grid for 4 character cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {anime.characters?.map((character) => (
+              {anime.characters?.map((character: any) => (
                 <div
                   key={character.id}
                   className="group relative aspect-3/4 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900"
@@ -124,7 +125,7 @@ export default async function AnimeDetailsPage({
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                     sizes="(max-width: 768px) 50vw, 25vw"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
                   <div className="absolute inset-x-0 bottom-0 p-3 text-center text-sm font-medium text-zinc-100 drop-shadow-md">
                     {character.name}
                   </div>

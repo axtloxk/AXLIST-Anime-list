@@ -62,16 +62,16 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
         transition={{ ease: "easeInOut" }}
       >
         <Link href={`/anime/${anime.slug}`} className="group block">
-          <div className="relative flex flex-col overflow-hidden rounded-lg border border-foreground/20 bg-muted/30 backdrop-blur-md transition-colors group-hover:border-zinc-600">
+          <div className="relative flex  flex-col overflow-hidden rounded-lg border border-foreground/20 bg-muted/30 backdrop-blur-md transition-colors group-hover:border-zinc-600">
             {/* POSTER CONTAINER */}
-            <div className="relative aspect-3/4 w-full overflow-hidden bg-zinc-950">
+            <div className="relative aspect-3/4 w-full overflow-hidden bg-zinc-950 ">
               {coverImage ? (
                 <Image
                   loading="lazy"
                   fill
                   src={coverImage}
                   alt={displayTitle}
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover  transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                   unoptimized
                 />
@@ -99,7 +99,7 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
             {/* CARD BODY */}
             <div className="flex flex-col justify-between p-2 gap-3">
               <h3
-                className="text-base text-[17px] font-semibold text-zinc-100 group-hover:text-gray-300 transition-colors mt-2"
+                className="text-base  line-clamp-1 text-[17px] font-semibold text-zinc-100 group-hover:text-gray-300 transition-colors mt-2"
                 title={displayTitle}
               >
                 {displayTitle}
@@ -117,8 +117,8 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
                 </div>
 
                 {/* Single Star Rating */}
-                <div className="flex items-center gap-1 font-mono text-[11px] text-zinc-300">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <div className="flex items-center gap-1 font-mono text-[13px] text-zinc-300">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                   <span>{clampedRating.toFixed(1)}</span>
                 </div>
               </div>

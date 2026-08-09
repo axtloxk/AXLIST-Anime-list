@@ -1,15 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import FilterBar from "./FilterBar";
 import { Separator } from "../ui/separator";
 import AnimeCard from "./AnimeCard";
 import { Anime } from "@/lib/types/anime";
 import { getAnimeList, FilterType, SortType } from "@/lib/api";
 export default function AnimeGrid() {
+  const ITEMS_PER_PAGE = 25;
   const [animeList, setAnimeList] = useState<Anime[]>([]);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  //  fetching more pages whenver the user reaches the end of the page with useRef
+  const observerTarget = useRef(null);
 
   // Strict type-safe filter and sort states using types imported from lib/api
   const [type, setType] = useState<FilterType>("all");
@@ -31,17 +35,54 @@ export default function AnimeGrid() {
     }
   }, [type, sort]);
 
-  // // Trigger data fetching whenever the type or sort parameters change
-  // useEffect(() => {
-  //   fetchAnime();
-  // }, [fetchAnime]);
-
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchAnime();
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [fetchAnime]);
+
+  // fetching pages
+  useEffect(() => {
+    const fetchAnime = async () => {
+      setIsLoading(true);
+      try {
+        const response = await getAnimeList({
+          limit: ITEMS_PER_PAGE,
+          page: page,
+        });
+        // Append new anime to the existing list
+        setAnimeList((prevAnime) => [...prevAnime, ...response.data]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnime();
+  }, [page]);
+  // increasing pages
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // If the target is visible and we aren't currently loading...
+        if (entries[0].isIntersecting && !isLoading) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      },
+      { threshold: 1.0 },
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    // Cleanup function
+    return () => {
+      if (observerTarget.current) observer.unobserve(observerTarget.current);
+    };
+  }, [isLoading]);
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col px-6">
       {/* Filter Bar */}
@@ -55,14 +96,8 @@ export default function AnimeGrid() {
       </div>
       <Separator className="mt-3" />
 
-      {/* Grid State Handling: Loading, Error, Empty, or Data */}
-      {isLoading ? (
-        <div className="mb-6 mt-8 grid grid-cols-2 gap-7 px-0 sm:grid-cols-3 md:grid-cols-4 md:px-4 lg:grid-cols-5">
-          {Array.from({ length: 14 }).map((_, index) => (
-            <AnimeCardSkeleton key={index} />
-          ))}
-        </div>
-      ) : error ? (
+      {/* Error State */}
+      {error && (
         <div className="my-12 flex flex-col items-center justify-center text-center">
           <p className="text-sm text-red-400">{error}</p>
           <button
@@ -72,22 +107,39 @@ export default function AnimeGrid() {
             Retry
           </button>
         </div>
-      ) : animeList.length === 0 ? (
+      )}
+
+      {/* Empty State (Not Loading, No Error, No Anime) */}
+      {!isLoading && !error && animeList.length === 0 && (
         <div className="my-12 text-center text-zinc-500">
           No anime found matching your selected filters.
         </div>
-      ) : (
-        <div className="mb-6 mt-8 grid grid-cols-2 gap-7 px-0 sm:grid-cols-3 md:grid-cols-4 md:px-4 lg:grid-cols-5">
-          {animeList.map((anime) => (
-            <AnimeCard key={anime.id || anime.slug} anime={anime} />
-          ))}
-        </div>
       )}
+
+      {/* Grid Container */}
+      <div className="mb-6 mt-8 grid grid-cols-2 gap-7 px-0 sm:grid-cols-3 md:grid-cols-4 md:px-4 lg:grid-cols-5">
+        {/* 1. Render all the anime you have loaded so far */}
+        {animeList.map((anime, index) => (
+          // Added index to key to prevent React errors if IDs ever duplicate during fetching
+          <AnimeCard key={`${anime.id || anime.slug}-${index}`} anime={anime} />
+        ))}
+
+        {/* 2. Show skeletons at the END of the list whenever loading */}
+        {isLoading &&
+          Array.from({ length: 18 }).map((_, index) => (
+            <AnimeCardSkeleton key={`skeleton-${index}`} />
+          ))}
+      </div>
+
+      {/* 3. The Invisible Target */}
+      {/* We only render this if there's no error, so infinite scroll stops if the network drops */}
+      {!error && <div ref={observerTarget} className="h-10  mb-3 w-full" />}
     </section>
   );
 }
 
 // Loading Skeleton Component matching the exact card dimensions and structure
+
 // add a small icon later on.
 function AnimeCardSkeleton() {
   return (
