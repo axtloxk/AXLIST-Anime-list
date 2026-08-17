@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Eye,
@@ -9,17 +10,28 @@ import {
   Mail,
   User,
   ArrowRight,
-  MoveLeft,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
-export default function AuthForm() {
-  const [mode, setMode] = useState<"register" | "login">("login");
+const MotionLink = motion.create(Link);
+
+export default function AuthForm({
+  defaultMode = "login",
+}: {
+  defaultMode?: "register" | "login";
+}) {
+  const router = useRouter();
+  const isRegister = defaultMode === "register";
+
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -28,20 +40,47 @@ export default function AuthForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Submitted (${mode}):`, formData);
-  };
+    setIsLoading(true);
+    setError(null);
 
-  const isRegister = mode === "register";
+    const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Authentication failed");
+      }
+
+      // Redirect to protected list route on successful auth
+      router.push("/my-list");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className=" w-full flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Main Form Container */}
+    <div
+      className="relative flex w-full items-center justify-center overflow-hidden
+    p-10 md:p-4"
+    >
+      {/* Back to home link */}
       <motion.nav
-        className="fixed top-4 left-8"
+        className="fixed left-8 top-4"
         whileHover={{ scale: 1.05, y: -1 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, scale: 0.8 }}
@@ -50,11 +89,12 @@ export default function AuthForm() {
       >
         <Link
           href="/"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors leading-none"
+          className="text-sm leading-none text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft />
         </Link>
-      </motion.nav>{" "}
+      </motion.nav>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -62,18 +102,33 @@ export default function AuthForm() {
           duration: 0.45,
           ease: [0.16, 1, 0.3, 1],
         }}
-        className="w-full max-w-lg p-8 sm:p-10 rounded-3xl bg-bg-cold/40 border border-neutral-800/80 backdrop-blur-2xl relative z-10"
+        className="relative z-10 w-full max-w-lg rounded-3xl border border-neutral-800/80 bg-bg-cold/40 p-8 backdrop-blur-2xl sm:p-10"
       >
-        <div className="mb-6 text-center space-y-1.5">
-          <h1 className="text-2xl font-bold tracking-wide text-neutral-200">
+        <div className="mb-6 space-y-1.5 text-center">
+          <h1
+            className=" 
+          text-[22px]
+          md:text-2xl font-bold tracking-wide text-neutral-200"
+          >
             {isRegister ? "Create an Account" : "Welcome Back"}
           </h1>
-          <p className="text-sm text-neutral-400">
+          <p
+            className="
+            text-xs
+            md:text-sm text-neutral-400"
+          >
             {isRegister
               ? "Enter your details below to register"
               : "Enter your credentials to access your account"}
           </p>
         </div>
+
+        {/* Error Display Banner */}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-center text-xs text-red-400">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username Field (Shown only in Register mode) */}
@@ -86,7 +141,7 @@ export default function AuthForm() {
                 Username
               </Label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                 <Input
                   id="username"
                   name="username"
@@ -95,7 +150,9 @@ export default function AuthForm() {
                   value={formData.username}
                   onChange={handleChange}
                   required={isRegister}
-                  className="pl-10  bg-neutral-900/70 border-neutral-800 text-white placeholder:text-neutral-500  focus-visible:ring-neutral-700 focus-visible:border-neutral-600 h-11 rounded-xl"
+                  className="h-11 rounded-xl border-neutral-800 bg-neutral-900/70 pl-10 text-white placeholder:text-neutral-500 focus-visible:border-neutral-600 focus-visible:ring-neutral-700
+                  focus-visible:border-0
+                  "
                 />
               </div>
             </div>
@@ -110,7 +167,7 @@ export default function AuthForm() {
               Email
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
               <Input
                 id="email"
                 name="email"
@@ -119,7 +176,10 @@ export default function AuthForm() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="pl-10 bg-neutral-900/70 border-neutral-800 text-white placeholder:text-neutral-500 focus-visible:ring-neutral-700 focus-visible:border-neutral-600 h-11 rounded-xl"
+                className="h-11 rounded-xl border-neutral-800 bg-neutral-900/70 pl-10 text-white placeholder:text-neutral-500 focus-visible:border-neutral-600 focus-visible:ring-neutral-700
+                  focus-visible:border-0
+                
+                "
               />
             </div>
           </div>
@@ -133,7 +193,7 @@ export default function AuthForm() {
               Password
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
 
               <Input
                 id="password"
@@ -143,14 +203,15 @@ export default function AuthForm() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="pl-10 pr-11 bg-neutral-900/70 border-neutral-800 text-white placeholder:text-neutral-500 focus-visible:ring-neutral-700 focus-visible:border-neutral-600 h-11 rounded-xl"
+                className="h-11 rounded-xl border-neutral-800 bg-neutral-900/70 pl-10 pr-11 text-white placeholder:text-neutral-500 focus-visible:border-neutral-600 focus-visible:ring-neutral-700
+                focus-visible:border-0
+                "
               />
 
-              {/* Animated Interactive Eye Button */}
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors focus:outline-none p-1 rounded-md"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-neutral-400 transition-colors hover:text-white focus:outline-none"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 <AnimatePresence mode="wait" initial={false}>
@@ -162,7 +223,7 @@ export default function AuthForm() {
                       exit={{ opacity: 0, scale: 0.5, rotate: 20 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <EyeOff className="w-4 h-4 text-neutral-300" />
+                      <EyeOff className="h-4 w-4 text-neutral-300" />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -172,7 +233,7 @@ export default function AuthForm() {
                       exit={{ opacity: 0, scale: 0.5, rotate: -20 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="h-4 w-4" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -180,7 +241,7 @@ export default function AuthForm() {
             </div>
           </div>
 
-          {/* Dark Submit Button */}
+          {/* Submit Button */}
           <motion.div
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
@@ -188,39 +249,44 @@ export default function AuthForm() {
           >
             <Button
               type="submit"
-              className="w-full h-11 cursor-pointer rounded-xl bg-card/60 hover:bg-card/10 text-neutral-100 border border-neutral-700/80 font-semibold transition-all flex items-center justify-center gap-2 hover:gap-4"
+              disabled={isLoading}
+              className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-neutral-700/80 bg-card/60 font-semibold text-neutral-100 transition-all hover:gap-4 hover:bg-card/10 disabled:opacity-50"
             >
-              {isRegister ? "Register" : "Sign In"}
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  {isRegister ? "Register" : "Sign In"}
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </motion.div>
         </form>
 
-        {/* Left-Aligned Bottom Mode Switcher */}
-        <div className="mt-6 text-left text-xs sm:text-sm text-neutral-400  ">
+        {/* Mode Switcher via Router Links */}
+        <div className="mt-6 text-left text-xs text-neutral-400 sm:text-sm">
           {isRegister ? (
             <>
               Already have an account?{" "}
-              <motion.button
-                whileHover={{ x: 10, opacity: 0.7 }}
-                type="button"
-                onClick={() => setMode("login")}
-                className="text-neutral-200 cursor-pointer font-medium underline underline-offset-4 transition-colors"
+              <MotionLink
+                href="/auth/login"
+                whileHover={{ x: 2, opacity: 0.8 }}
+                className="inline-block font-medium text-neutral-200 underline underline-offset-4 transition-colors hover:text-white"
               >
                 Sign In
-              </motion.button>
+              </MotionLink>
             </>
           ) : (
             <>
               Don&apos;t have an account?{" "}
-              <motion.button
-                whileHover={{ x: 10, opacity: 0.7 }}
-                type="button"
-                onClick={() => setMode("register")}
-                className="text-neutral-200 cursor-pointer font-medium underline underline-offset-4 transition-colors"
+              <MotionLink
+                href="/auth/register"
+                whileHover={{ x: 2, opacity: 0.8 }}
+                className="inline-block font-medium text-neutral-200 underline underline-offset-4 transition-colors hover:text-white"
               >
                 Create account
-              </motion.button>
+              </MotionLink>
             </>
           )}
         </div>

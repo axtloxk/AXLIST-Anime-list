@@ -50,21 +50,6 @@ export async function getAnimeList({
 /**
  * Fetches single anime details via internal Next.js API Route handler.
  */
-// export async function getAnimeBySlug(slug: string): Promise<Anime | null> {
-//   try {
-//     const res = await fetch(
-//       `/api/anime/detail?slug=${encodeURIComponent(slug)}`,
-//     );
-
-//     if (!res.ok) return null;
-
-//     const animeData: Anime = await res.json();
-//     return animeData;
-//   } catch (error) {
-//     console.error(`Failed to fetch anime data for ${slug}:`, error);
-//     return null;
-//   }
-// }
 
 export async function getAnimeBySlug(idString: string): Promise<any | null> {
   const ANILIST_ENDPOINT = "https://graphql.anilist.co";

@@ -1,10 +1,11 @@
 import AuthForm from "@/components/auth/AuthModal";
-const page = () => {
+
+const LoginPage = () => {
   return (
-    <div className="min-h-screen flex justify-center">
-      <AuthForm />
+    <div className="flex min-h-screen justify-center">
+      <AuthForm defaultMode="login" />
     </div>
   );
 };
 
-export default page;
+export default LoginPage;

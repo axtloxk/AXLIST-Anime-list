@@ -6,6 +6,7 @@ import { Separator } from "../ui/separator";
 import AnimeCard from "./AnimeCard";
 import { Anime } from "@/lib/types/anime";
 import { getAnimeList, FilterType, SortType } from "@/lib/api";
+
 export default function AnimeGrid() {
   const ITEMS_PER_PAGE = 25;
   const [animeList, setAnimeList] = useState<Anime[]>([]);
@@ -62,6 +63,7 @@ export default function AnimeGrid() {
 
     fetchAnime();
   }, [page]);
+
   // increasing pages
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -83,6 +85,7 @@ export default function AnimeGrid() {
       if (observerTarget.current) observer.unobserve(observerTarget.current);
     };
   }, [isLoading]);
+
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col px-6">
       {/* Filter Bar */}
@@ -126,29 +129,33 @@ export default function AnimeGrid() {
 
         {/* 2. Show skeletons at the END of the list whenever loading */}
         {isLoading &&
-          Array.from({ length: 18 }).map((_, index) => (
+          Array.from({ length: 24 }).map((_, index) => (
             <AnimeCardSkeleton key={`skeleton-${index}`} />
           ))}
       </div>
 
-      {/* 3. The Invisible Target */}
-      {/* We only render this if there's no error, so infinite scroll stops if the network drops */}
-      {!error && <div ref={observerTarget} className="h-10  mb-3 w-full" />}
+      {!error && <div ref={observerTarget} className="mb-3 h-10 w-full" />}
     </section>
   );
 }
 
-// Loading Skeleton Component matching the exact card dimensions and structure
-
-// add a small icon later on.
+// Loading Skeleton Component with centered loading image
 function AnimeCardSkeleton() {
   return (
-    <div className="flex w-full animate-pulse flex-col rounded-lg border border-zinc-800 bg-zinc-900/50 p-2">
-      <div className="aspect-3/4 w-full rounded-md bg-zinc-800/80" />
-      <div className="mt-3 h-4 w-3/4 rounded bg-zinc-800" />
+    <div className="flex w-full animate-pulse flex-col rounded-lg border border-zinc-800 bg-zinc-900/30 p-2">
+      <div className="flex aspect-3/4 w-full items-center justify-center rounded-md bg-zinc-800/80">
+        {/* <Image
+          src={loadingImage}
+          alt="Loading..."
+          width={64}
+          height={64}
+          className="h-16 w-16 object-contain"
+        /> */}
+      </div>
+      <div className="mt-3 h-4 w-3/4 rounded bg-zinc-900/60" />
       <div className="mt-3 flex items-center justify-between border-t border-zinc-800/60 pt-2">
-        <div className="h-3 w-12 rounded bg-zinc-800" />
-        <div className="h-3 w-8 rounded bg-zinc-800" />
+        <div className="h-3 w-12 rounded bg-zinc-900" />
+        <div className="h-3 w-8 rounded bg-zinc-900" />
       </div>
     </div>
   );

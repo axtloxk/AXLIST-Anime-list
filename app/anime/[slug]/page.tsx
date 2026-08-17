@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { Star, Tv, Film } from "lucide-react";
+import { Star, Tv, Film, ArrowLeft } from "lucide-react";
 // Assuming you have a function to fetch your anime data
 import { getAnimeBySlug } from "@/lib/api";
-
+import Link from "next/link";
 // Next.js 15 standard requires treating params as a Promise
 export default async function AnimeDetailsPage({
   params,
@@ -22,6 +22,21 @@ export default async function AnimeDetailsPage({
         GRID LAYOUT 
         1 column on mobile, 2 columns on desktop (300px left, remaining space right) 
       */}
+      {/* <motion.nav
+        className="fixed top-4 left-8"
+        whileHover={{ scale: 1.05, y: -1 }}
+        whileTap={{ scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+      > */}
+      <Link
+        href="/"
+        className="fixed opacity-50 top-4 left-4 text-sm text-muted-foreground hover:text-foreground transition-colors leading-none"
+      >
+        <ArrowLeft />
+      </Link>
+      {/* </motion.nav> */}
       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8 items-start">
         {/* ================= LEFT COLUMN: POSTER ================= */}
         <div className="relative aspect-3/4 w-full max-w-75 mx-auto md:mx-0 overflow-hidden rounded-xl border border-zinc-800 shadow-2xl">
@@ -58,7 +73,7 @@ export default async function AnimeDetailsPage({
           </div>
         </div>
 
-        {/* ================= RIGHT COLUMN: DETAILS ================= */}
+        {/*  RIGHT COLUMN: DETAILS   */}
         <div className="flex flex-col gap-8">
           {/* Synopsis Section */}
           <section>

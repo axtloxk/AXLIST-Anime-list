@@ -47,7 +47,7 @@ const FilterBar = ({
   const handleTypeChange = (value: string) => {
     const next = value as FilterType;
     onTypeChange?.(next);
-    setTypeOpen(false); // Closes the Type dropdown
+    setTypeOpen(false);
   };
 
   const handleSortChange = (value: string) => {

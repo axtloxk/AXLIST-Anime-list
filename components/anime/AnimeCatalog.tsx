@@ -19,20 +19,11 @@ export default function AnimeCatalog() {
     setLoading(false);
   }, [type, sort]);
 
-  // useEffect(() => {
-  //   fetchAnime();
-  // }, [fetchAnime]);
-
-  // Trigger data fetching whenever the type or sort parameters change
   useEffect(() => {
-    // 1. Tell React to wait 500ms before actually firing the fetch
     const timeoutId = setTimeout(() => {
       fetchAnime();
     }, 500);
 
-    // 2. The Cleanup Function: If React Strict Mode unmounts this component
-    // instantly, this runs and destroys the timer. The first phantom request
-    // is completely canceled before it hits Jikan!
     return () => clearTimeout(timeoutId);
   }, [fetchAnime]);
   return (
