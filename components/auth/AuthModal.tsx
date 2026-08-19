@@ -82,10 +82,10 @@ export default function AuthForm({
   };
 
   return (
-    <div className="relative flex w-full items-center justify-center overflow-hidden p-10 md:p-4">
+    <div className="relative flex w-full items-center justify-center overflow-hidden px-6 py-10 md:p-4">
       {/* Back to home link */}
       <motion.nav
-        className="fixed left-8 top-4"
+        className="fixed left-3.5 md:left-6 lg:left-8 top-4"
         whileHover={{ scale: 1.05, y: -1 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, scale: 0.8 }}
@@ -94,7 +94,7 @@ export default function AuthForm({
       >
         <Link
           href="/"
-          className="text-sm leading-none text-muted-foreground transition-colors hover:text-foreground"
+          className=" text-sm leading-none text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft />
         </Link>
@@ -106,7 +106,7 @@ export default function AuthForm({
           duration: 0.45,
           ease: [0.16, 1, 0.3, 1],
         }}
-        className="relative z-10 w-full max-w-lg rounded-3xl border border-neutral-800/80 bg-bg-cold/40 p-8 backdrop-blur-2xl sm:p-10"
+        className="relative z-10 w-full max-w-lg rounded-3xl border border-neutral-800/80 bg-bg-cold/40 p-5 backdrop-blur-2xl sm:p-10"
       >
         <div className="mb-6 space-y-1.5 text-center">
           <h1 className="text-[22px] font-bold tracking-wide text-neutral-200 md:text-2xl">
