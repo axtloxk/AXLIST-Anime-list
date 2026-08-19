@@ -10,7 +10,7 @@ export default function Loading() {
       </div>
 
       {/* Separator Skeleton */}
-      <div className="mt-6 mb-7 h-[1px] w-full bg-zinc-800/60" />
+      <div className="mt-3 mb-5 h-px w-full bg-zinc-800/60" />
 
       {/* Anime Grid Skeleton */}
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
