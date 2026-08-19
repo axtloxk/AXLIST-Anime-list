@@ -13,14 +13,11 @@ export default function AnimeGrid() {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  //  fetching more pages whenver the user reaches the end of the page with useRef
   const observerTarget = useRef(null);
 
-  // Strict type-safe filter and sort states using types imported from lib/api
   const [type, setType] = useState<FilterType>("all");
   const [sort, setSort] = useState<SortType>("popular");
 
-  // Fetch function wrapped in useCallback to prevent infinite loops inside useEffect
   const fetchAnime = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -121,13 +118,10 @@ export default function AnimeGrid() {
 
       {/* Grid Container */}
       <div className="mb-6 mt-8 grid grid-cols-2 gap-7 px-0 sm:grid-cols-3 md:grid-cols-4 md:px-4 lg:grid-cols-5">
-        {/* 1. Render all the anime you have loaded so far */}
         {animeList.map((anime, index) => (
-          // Added index to key to prevent React errors if IDs ever duplicate during fetching
           <AnimeCard key={`${anime.id || anime.slug}-${index}`} anime={anime} />
         ))}
 
-        {/* 2. Show skeletons at the END of the list whenever loading */}
         {isLoading &&
           Array.from({ length: 24 }).map((_, index) => (
             <AnimeCardSkeleton key={`skeleton-${index}`} />
@@ -143,15 +137,7 @@ export default function AnimeGrid() {
 function AnimeCardSkeleton() {
   return (
     <div className="flex w-full animate-pulse flex-col rounded-lg border border-zinc-800 bg-zinc-900/30 p-2">
-      <div className="flex aspect-3/4 w-full items-center justify-center rounded-md bg-zinc-800/80">
-        {/* <Image
-          src={loadingImage}
-          alt="Loading..."
-          width={64}
-          height={64}
-          className="h-16 w-16 object-contain"
-        /> */}
-      </div>
+      <div className="flex aspect-3/4 w-full items-center justify-center rounded-md bg-zinc-800/80"></div>
       <div className="mt-3 h-4 w-3/4 rounded bg-zinc-900/60" />
       <div className="mt-3 flex items-center justify-between border-t border-zinc-800/60 pt-2">
         <div className="h-3 w-12 rounded bg-zinc-900" />

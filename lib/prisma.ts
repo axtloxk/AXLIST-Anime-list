@@ -2,9 +2,17 @@ import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const prismaClientSingleton = () => {
+  // Pull the live variable at runtime
+  const dbUrl = process.env.DATABASE_URL;
+
+  if (!dbUrl) {
+    throw new Error("DATABASE_URL is missing at runtime.");
+  }
+
   const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL!,
+    connectionString: dbUrl,
   });
+
   return new PrismaClient({ adapter });
 };
 
@@ -12,6 +20,7 @@ declare global {
   var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
 }
 
+// Do not instantly initialize during build-time compilation if possible
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
 export default prisma;

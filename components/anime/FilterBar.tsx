@@ -14,7 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FilterType, SortType } from "@/lib/api"; // Import shared types directly from API
+import { FilterType, SortType } from "@/lib/api";
+import Loading from "../Loading";
 
 const TYPE_LABELS: Record<FilterType, string> = {
   all: "All",
@@ -96,7 +97,6 @@ const FilterBar = ({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-
       {/* Sort Dropdown */}
       <DropdownMenu open={sortOpen} onOpenChange={setSortOpen}>
         <DropdownMenuTrigger

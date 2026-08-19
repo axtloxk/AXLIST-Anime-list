@@ -1,22 +1,33 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Tv, Film } from "lucide-react";
+import { Star, Tv, Film, Heart, Bookmark } from "lucide-react";
 import { Anime } from "@/lib/types/anime";
 
 interface AnimeCardProps {
   anime: Anime;
+  initialIsSaved?: boolean;
+  priority?: boolean; // Prop to eliminate Next.js LCP warnings on top-of-page cards
 }
 
-export default function AnimeCard({ anime }: AnimeCardProps) {
+export default function AnimeCard({
+  anime,
+  initialIsSaved = false,
+  priority = false,
+}: AnimeCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [popupPosition, setPopupPosition] = useState<"right" | "left">("right");
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [isLoading, setIsLoading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-
+  useEffect(() => {
+    setIsSaved(initialIsSaved);
+  }, [initialIsSaved]);
   const {
+    id,
     title,
     titleEnglish,
     coverImage,
@@ -25,21 +36,15 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
     type,
     rating,
     slug,
-    id,
   } = anime;
-
   const displayTitle = titleEnglish || title;
-  const clampedRating = Math.min(5, Math.max(0, rating));
 
   const handleMouseEnter = () => {
-    // Only run hover/popup calculation on desktop/laptop screens (lg / 1024px+)
     if (cardRef.current && window.innerWidth >= 1024) {
       const rect = cardRef.current.getBoundingClientRect();
       const spaceOnRight = window.innerWidth - rect.right;
-      // Original width of popup (240px / w-60) + margin gap (12px / ml-3)
-      const requiredSpace = 260;
 
-      if (spaceOnRight < requiredSpace) {
+      if (spaceOnRight < 260) {
         setPopupPosition("left");
       } else {
         setPopupPosition("right");
@@ -48,32 +53,68 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
     }
   };
 
+  const handleToggleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isLoading) return;
+
+    const previousState = isSaved;
+    setIsSaved(!previousState);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/saved-anime", {
+        method: previousState ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          animeId: id,
+          title: displayTitle,
+          imageUrl: coverImage,
+        }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert("Please log in to save anime to your favorites.");
+        }
+        throw new Error("Failed to update save status");
+      }
+    } catch (error) {
+      console.error("[TOGGLE_SAVE_ERROR]", error);
+      setIsSaved(previousState); // Revert optimistic UI on failure
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <motion.div
       ref={cardRef}
-      className={`${isHovered ? "z-100" : "z-0"} relative  transform-gpu will-change-transform w-full`}
+      className={`${isHovered ? "z-100" : "z-0"} relative transform-gpu will-change-transform w-full`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setIsHovered(false)}
     >
       <motion.div
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: 10, opacity: 0.7 }}
+        whileHover={{ y: -5 }}
         transition={{ ease: "easeInOut" }}
       >
-        <Link href={`/anime/${anime.slug}`} className="group block">
-          <div className="relative flex  flex-col overflow-hidden rounded-lg border border-foreground/20 bg-muted/30 backdrop-blur-md transition-colors group-hover:border-zinc-600">
+        <div className="group relative flex flex-col overflow-hidden rounded-lg border border-foreground/20 bg-muted/30 backdrop-blur-md transition-colors hover:border-zinc-600">
+          {/* LINK WRAPS POSTER + TITLE (Avoids nesting <button> inside <a>) */}
+          <Link href={`/anime/${slug}`} className="block">
             {/* POSTER CONTAINER */}
-            <div className="relative aspect-3/4 w-full overflow-hidden bg-zinc-950 ">
+            <div className="relative aspect-3/4 w-full overflow-hidden bg-zinc-950">
               {coverImage ? (
                 <Image
-                  loading="lazy"
                   fill
+                  priority={priority}
                   src={coverImage}
                   alt={displayTitle}
-                  className="object-cover  transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                  unoptimized
+                  quality={85}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-zinc-700 text-xs font-mono uppercase tracking-widest">
@@ -96,35 +137,50 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
               </div>
             </div>
 
-            {/* CARD BODY */}
-            <div className="flex flex-col justify-between p-2 gap-3">
+            {/* TITLE */}
+            <div className="p-2 pb-0">
               <h3
-                className="text-base  line-clamp-1 text-[17px] font-semibold text-zinc-100 group-hover:text-gray-300 transition-colors mt-2"
+                className="text-base line-clamp-1 text-[17px] font-semibold text-zinc-100 group-hover:text-gray-300 transition-colors mt-1"
                 title={displayTitle}
               >
                 {displayTitle}
               </h3>
+            </div>
+          </Link>
 
-              {/* FOOTER */}
-              <div className="flex items-center justify-between border-t border-zinc-800/60 pt-3 mb-2 text-xs text-zinc-400">
-                <div className="flex items-center gap-1.5 font-medium text-zinc-400">
-                  {type === "Movie" ? (
-                    <Film className="w-3.5 h-3.5 text-zinc-500" />
-                  ) : (
-                    <Tv className="w-3.5 h-3.5 text-zinc-500" />
-                  )}
-                  <span>{type}</span>
-                </div>
-
-                {/* Single Star Rating */}
-                <div className="flex items-center gap-1 font-mono text-[13px] text-zinc-300">
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                  <span>{clampedRating.toFixed(1)}</span>
-                </div>
+          {/* FOOTER (SEPARATED FROM LINK) */}
+          <div className="p-2 pt-1">
+            <div className="flex items-center justify-between border-t border-zinc-800/60 pt-2 px-1 mb-1 text-xs text-zinc-400">
+              {/* Type */}
+              <div className="flex items-center gap-1.5 font-medium text-zinc-400">
+                {type === "Movie" ? (
+                  <Film className="w-3.5 h-3.5 text-zinc-500" />
+                ) : (
+                  <Tv className="w-3.5 h-3.5 text-zinc-500" />
+                )}
+                <span>{type}</span>
               </div>
+
+              {/* Favorite / Save Button */}
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.8 }}
+                onClick={handleToggleSave}
+                disabled={isLoading}
+                className=" group/btn flex items-center justify-center rounded-full p-1 transition-colors hover:bg-zinc-800/50 disabled:opacity-50"
+                aria-label={isSaved ? "Remove from saved" : "Save anime"}
+              >
+                <Heart
+                  className={`h-4 w-4 cursor-pointer transition-all duration-300 ${
+                    isSaved
+                      ? "fill-red-500 text-red-500 "
+                      : "text-zinc-500 group-hover/btn:text-red-400 scale-80"
+                  }`}
+                />
+              </motion.button>
             </div>
           </div>
-        </Link>
+        </div>
       </motion.div>
 
       {/* POPUP CARD */}
@@ -135,7 +191,7 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
   );
 }
 
-// PopUpCard Component (Original size, hidden on sm/md)
+// POPUP CARD
 function PopUpCard({
   anime,
   position = "right",
@@ -158,7 +214,6 @@ function PopUpCard({
 
   const displayTitle = titleEnglish || title;
   const clampedRating = Math.min(5, Math.max(0, rating));
-
   const isLeft = position === "left";
 
   return (
@@ -171,14 +226,12 @@ function PopUpCard({
         isLeft ? "right-full mr-3" : "left-full ml-3"
       }`}
     >
-      {/* ENGLISH TITLE */}
       <div className="mb-2">
         <h4 className="line-clamp-1 font-semibold text-zinc-100 text-sm">
           {displayTitle}
         </h4>
       </div>
 
-      {/* HEADER: Rating, Type, Episodes */}
       <div className="flex items-center justify-between border-y border-zinc-800/80 py-2 text-xs">
         <div className="flex items-center gap-1 font-mono text-zinc-200">
           <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -199,13 +252,11 @@ function PopUpCard({
         </span>
       </div>
 
-      {/* MAIN SECTION: Description & Metadata */}
       <div className="mt-3 flex flex-col gap-2">
         <p className="line-clamp-6 text-sm leading-relaxed text-zinc-400">
           {synopsis || "No description available for this title."}
         </p>
 
-        {/* METADATA UNDER DESCRIPTION */}
         <div className="mt-1 flex flex-col gap-1 border-t border-zinc-800/60 pt-2 text-[13px] text-zinc-400">
           {titleJapanese && (
             <p className="line-clamp-1">

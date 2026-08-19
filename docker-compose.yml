@@ -4,13 +4,22 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: ${DB_USER:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
+      POSTGRES_DB: ${DB_NAME:-mydatabase}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-myuser} -d ${DB_NAME:-mydatabase}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   web:
     build:
@@ -21,10 +30,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: "postgresql://myuser:mypassword@postgres:5432/mydatabase?schema=public"
-      NODE_ENV: production
+      - DATABASE_URL=postgresql://myuser:mypassword@postgres:5432/mydatabase?schema=public
+      - NODE_ENV=production
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy # This will now work perfectly!
 
 volumes:
   postgres_data:

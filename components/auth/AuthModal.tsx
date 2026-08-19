@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const MotionLink = motion.create(Link);
 
@@ -30,7 +31,6 @@ export default function AuthForm({
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -40,44 +40,49 @@ export default function AuthForm({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
 
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+    // Async action wrapped in a promise for Sonner
+    const authPromise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Authentication failed");
+        if (!res.ok) {
+          throw new Error(data.error || "Authentication failed");
+        }
+
+        resolve(data);
+      } catch (err: any) {
+        reject(err.message || "An unexpected error occurred");
       }
+    });
 
-      // Redirect to protected list route on successful auth
-      router.push("/my-list");
-      router.refresh();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    toast.promise(authPromise, {
+      loading: isRegister ? "Creating your account..." : "Signing in...",
+      success: () => {
+        router.push("/my-list");
+        router.refresh();
+        return isRegister ? "Account created successfully!" : "Welcome back!";
+      },
+      error: (err) => err,
+      finally: () => setIsLoading(false),
+    });
   };
 
   return (
-    <div
-      className="relative flex w-full items-center justify-center overflow-hidden
-    p-10 md:p-4"
-    >
+    <div className="relative flex w-full items-center justify-center overflow-hidden p-10 md:p-4">
       {/* Back to home link */}
       <motion.nav
         className="fixed left-8 top-4"
@@ -105,33 +110,18 @@ export default function AuthForm({
         className="relative z-10 w-full max-w-lg rounded-3xl border border-neutral-800/80 bg-bg-cold/40 p-8 backdrop-blur-2xl sm:p-10"
       >
         <div className="mb-6 space-y-1.5 text-center">
-          <h1
-            className=" 
-          text-[22px]
-          md:text-2xl font-bold tracking-wide text-neutral-200"
-          >
+          <h1 className="text-[22px] font-bold tracking-wide text-neutral-200 md:text-2xl">
             {isRegister ? "Create an Account" : "Welcome Back"}
           </h1>
-          <p
-            className="
-            text-xs
-            md:text-sm text-neutral-400"
-          >
+          <p className="text-xs text-neutral-400 md:text-sm">
             {isRegister
               ? "Enter your details below to register"
               : "Enter your credentials to access your account"}
           </p>
         </div>
 
-        {/* Error Display Banner */}
-        {error && (
-          <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-center text-xs text-red-400">
-            {error}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Username Field (Shown only in Register mode) */}
+          {/* Username Field */}
           {isRegister && (
             <div className="space-y-2">
               <Label
@@ -150,9 +140,7 @@ export default function AuthForm({
                   value={formData.username}
                   onChange={handleChange}
                   required={isRegister}
-                  className="h-11 rounded-xl border-neutral-800 bg-neutral-900/70 pl-10 text-white placeholder:text-neutral-500 focus-visible:border-neutral-600 focus-visible:ring-neutral-700
-                  focus-visible:border-0
-                  "
+                  className="h-11 rounded-xl border-0 border-neutral-800 bg-neutral-900/70 pl-10 text-white placeholder:text-neutral-500 focus-visible:ring-neutral-700"
                 />
               </div>
             </div>
@@ -176,15 +164,12 @@ export default function AuthForm({
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="h-11 rounded-xl border-neutral-800 bg-neutral-900/70 pl-10 text-white placeholder:text-neutral-500 focus-visible:border-neutral-600 focus-visible:ring-neutral-700
-                  focus-visible:border-0
-                
-                "
+                className="h-11 rounded-xl border-0 border-neutral-800 bg-neutral-900/70 pl-10 text-white placeholder:text-neutral-500 focus-visible:ring-neutral-700"
               />
             </div>
           </div>
 
-          {/* Password Field with Eye Toggle */}
+          {/* Password Field */}
           <div className="space-y-2">
             <Label
               htmlFor="password"
@@ -203,9 +188,7 @@ export default function AuthForm({
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="h-11 rounded-xl border-neutral-800 bg-neutral-900/70 pl-10 pr-11 text-white placeholder:text-neutral-500 focus-visible:border-neutral-600 focus-visible:ring-neutral-700
-                focus-visible:border-0
-                "
+                className="h-11 rounded-xl border-0 border-neutral-800 bg-neutral-900/70 pl-10 pr-11 text-white placeholder:text-neutral-500 focus-visible:ring-neutral-700"
               />
 
               <button
@@ -264,7 +247,7 @@ export default function AuthForm({
           </motion.div>
         </form>
 
-        {/* Mode Switcher via Router Links */}
+        {/* Mode Switcher */}
         <div className="mt-6 text-left text-xs text-neutral-400 sm:text-sm">
           {isRegister ? (
             <>

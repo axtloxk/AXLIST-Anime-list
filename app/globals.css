@@ -116,3 +116,17 @@
     @apply bg-background text-foreground;
   }
 }
+@keyframes cardLoad {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(20px);
+  }
+}
+
+.animate-card-load {
+  animation: cardLoad 0.4s ease-out forwards;
+}

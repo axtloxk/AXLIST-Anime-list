@@ -1,38 +1,22 @@
 import Image from "next/image";
 import { Star, Tv, Film, ArrowLeft } from "lucide-react";
-// Assuming you have a function to fetch your anime data
 import { getAnimeBySlug } from "@/lib/api";
 import Link from "next/link";
-// Next.js 15 standard requires treating params as a Promise
 export default async function AnimeDetailsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
-  // Fetch your data on the server based on the slug
   const anime = await getAnimeBySlug(slug);
 
   if (!anime) return <div>Anime not found</div>;
 
   return (
     <main className="container mx-auto px-4 py-8 md:py-12 max-w-6xl text-zinc-100">
-      {/* 
-        GRID LAYOUT 
-        1 column on mobile, 2 columns on desktop (300px left, remaining space right) 
-      */}
-      {/* <motion.nav
-        className="fixed top-4 left-8"
-        whileHover={{ scale: 1.05, y: -1 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-      > */}
       <Link
         href="/"
-        className="fixed opacity-50 top-4 left-4 text-sm text-muted-foreground hover:text-foreground transition-colors leading-none"
+        className="absolute lg:fixed opacity-50 top-4 left-4 text-sm text-muted-foreground hover:text-foreground transition-colors leading-none"
       >
         <ArrowLeft />
       </Link>
