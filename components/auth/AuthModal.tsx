@@ -99,7 +99,6 @@ export default function AuthForm({
           <ArrowLeft />
         </Link>
       </motion.nav>
-
       <motion.div
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}

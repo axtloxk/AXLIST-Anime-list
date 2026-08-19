@@ -130,3 +130,28 @@
 .animate-card-load {
   animation: cardLoad 0.4s ease-out forwards;
 }
+/* Responsive Sizing for Sonner Toasts */
+
+/* 1. Mobile Screens (Phones) */
+@media (max-width: 640px) {
+  html [data-sonner-toaster] {
+    --width: 150px !important; /* Forces 150px layout size */
+  }
+
+  html [data-sonner-toaster] [data-sonner-toast] {
+    width: 250px !important; /* Hard overrides individual card wrappers */
+    min-width: 200px !important;
+    max-width: 250px !important;
+  }
+}
+
+/* 2. Laptop / Desktop Screens (PC) */
+@media (min-width: 641px) {
+  html [data-sonner-toaster] {
+    --width: 356px !important; /* Reverts back to standard laptop/PC sizing */
+  }
+
+  html [data-sonner-toaster] [data-sonner-toast] {
+    width: 356px !important;
+  }
+}
