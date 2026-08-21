@@ -136,8 +136,8 @@ export default function AnimeGrid() {
 // Loading Skeleton Component with centered loading image
 function AnimeCardSkeleton() {
   return (
-    <div className="flex w-full animate-pulse flex-col rounded-lg border border-zinc-800 bg-zinc-900/30 p-2">
-      <div className="flex aspect-3/4 w-full items-center justify-center rounded-md bg-zinc-800/80"></div>
+    <div className="flex w-full animate-pulse flex-col rounded-lg border pb-4 border-zinc-800 bg-zinc-900/30 p-2">
+      <div className="flex aspect-3/4 w-full items-center justify-center rounded-md bg-zinc-900/60"></div>
       <div className="mt-3 h-4 w-3/4 rounded bg-zinc-900/60" />
       <div className="mt-3 flex items-center justify-between border-t border-zinc-800/60 pt-2">
         <div className="h-3 w-12 rounded bg-zinc-900" />

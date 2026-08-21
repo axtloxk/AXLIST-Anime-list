@@ -98,7 +98,7 @@ export default function AnimeCard({
       <motion.div
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -5 }}
+        whileHover={{ y: 10, opacity: 0.7 }}
         transition={{ ease: "easeInOut" }}
       >
         <div className="group relative flex flex-col overflow-hidden rounded-lg border border-foreground/20 bg-muted/30 backdrop-blur-md transition-colors hover:border-zinc-600">
