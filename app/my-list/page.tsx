@@ -58,7 +58,7 @@ export default async function MyListPage() {
     );
 
     return (
-      <div className="animate-card-load  container px-6 py-4 lg:min-w-full min-h-screen lg:px-14 lg:py-0">
+      <div className="animate-card-load  container px-6 py-4 lg:min-w-full min-h-screen lg:px-14 lg:py lg:pb-5">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link
