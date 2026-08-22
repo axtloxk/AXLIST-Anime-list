@@ -33,7 +33,7 @@ export default async function AnimeDetailsPage({
             sizes="(max-width: 768px) 100vw, 300px"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-zinc-950/40 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/20 to-zinc-950/40 pointer-events-none" />
 
           {/* Top: Episodes */}
           <div className="absolute top-3 left-3 rounded-md bg-zinc-950/80 px-2 py-1 text-xs font-mono tracking-wider text-zinc-300 backdrop-blur-md">
@@ -124,7 +124,7 @@ export default async function AnimeDetailsPage({
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                     sizes="(max-width: 768px) 50vw, 25vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
                   <div className="absolute inset-x-0 bottom-0 p-3 text-center text-sm font-medium text-zinc-100 drop-shadow-md">
                     {character.name}
                   </div>

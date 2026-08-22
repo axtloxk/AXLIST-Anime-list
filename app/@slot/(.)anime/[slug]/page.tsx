@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Star, Tv, Film } from "lucide-react";
 import { getAnimeBySlug } from "@/lib/api";
 import { BackButton } from "@/components/anime/BackButton";
+import { ScrollLock } from "@/components/anime/ScrollLocker";
 
 export default async function InterceptedAnimePage({
   params,
@@ -14,7 +15,8 @@ export default async function InterceptedAnimePage({
   if (!anime) return null;
 
   return (
-    <div className="fixed inset-0 z-150 bg-zinc-950 overflow-y-auto min-h-screen">
+    <div className="fixed inset-0 z-150 bg-background overflow-y-auto min-h-screen ">
+      <ScrollLock />
       <main className="container mx-auto px-4 py-8 md:py-12 max-w-6xl text-zinc-100 relative">
         <BackButton />
 
@@ -29,7 +31,7 @@ export default async function InterceptedAnimePage({
               priority
               sizes="(max-width: 768px) 100vw, 300px"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-zinc-950/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/20 to-zinc-950/40 pointer-events-none" />
 
             <div className="absolute top-3 left-3 rounded-md bg-zinc-950/80 px-2 py-1 text-xs font-mono tracking-wider text-zinc-300 backdrop-blur-md">
               {anime.episodes ? `${anime.episodes} EPS` : "TBA"}
@@ -117,7 +119,7 @@ export default async function InterceptedAnimePage({
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                       sizes="(max-width: 768px) 50vw, 25vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
                     <div className="absolute inset-x-0 bottom-0 p-3 text-center text-sm font-medium text-zinc-100 drop-shadow-md">
                       {character.name}
                     </div>
