@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Tv, Film, Heart, Bookmark } from "lucide-react";
+import { Star, Tv, Film, Bookmark } from "lucide-react";
 import { Anime } from "@/lib/types/anime";
 
 interface AnimeCardProps {
@@ -23,9 +23,11 @@ export default function AnimeCard({
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isLoading, setIsLoading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setIsSaved(initialIsSaved);
   }, [initialIsSaved]);
+
   const {
     id,
     title,
@@ -102,7 +104,7 @@ export default function AnimeCard({
         transition={{ ease: "easeInOut" }}
       >
         <div className="group relative flex flex-col overflow-hidden rounded-lg border border-foreground/20 bg-muted/30 backdrop-blur-md transition-colors hover:border-zinc-600">
-          {/* LINK WRAPS POSTER + TITLE (Avoids nesting <button> inside <a>) */}
+          {/* LINK WRAPS POSTER + TITLE */}
           <Link href={`/anime/${slug}`} className="block">
             {/* POSTER CONTAINER */}
             <div className="relative aspect-3/4 w-full overflow-hidden bg-zinc-950">
@@ -122,7 +124,7 @@ export default function AnimeCard({
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-linear-to-b from-zinc-950/80 via-transparent to-zinc-950/40 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/80 via-transparent to-zinc-950/40 pointer-events-none" />
 
               {/* Year */}
               <div className="absolute top-3 left-3 z-10 rounded-md border border-white/10 bg-zinc-950/60 px-2 py-0.5 text-[11px] font-mono tracking-wider text-zinc-300 backdrop-blur-md shadow-sm">
@@ -148,7 +150,7 @@ export default function AnimeCard({
             </div>
           </Link>
 
-          {/* FOOTER (SEPARATED FROM LINK) */}
+          {/* FOOTER */}
           <div className="p-2 pt-1">
             <div className="flex items-center justify-between border-t border-zinc-800/60 pt-2 px-1 mb-1 text-xs text-zinc-400">
               {/* Type */}
@@ -161,20 +163,20 @@ export default function AnimeCard({
                 <span>{type}</span>
               </div>
 
-              {/* Favorite / Save Button */}
+              {/* Bookmark Save Button */}
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.8 }}
                 onClick={handleToggleSave}
                 disabled={isLoading}
-                className=" group/btn flex items-center justify-center rounded-full p-1 transition-colors hover:bg-zinc-800/50 disabled:opacity-50"
-                aria-label={isSaved ? "Remove from saved" : "Save anime"}
+                className="group/btn flex items-center justify-center rounded-full p-1 transition-colors hover:bg-zinc-800/50 disabled:opacity-50"
+                aria-label={isSaved ? "Remove bookmark" : "Bookmark anime"}
               >
-                <Heart
+                <Bookmark
                   className={`h-4 w-4 cursor-pointer transition-all duration-300 ${
                     isSaved
-                      ? "fill-red-500 text-red-500 "
-                      : "text-zinc-500 group-hover/btn:text-red-400 scale-80"
+                      ? "fill-indigo-500 text-indigo-500 drop-shadow-[0_0_3px_rgba(99,102,241,0.2)]"
+                      : "text-zinc-500 group-hover/btn:text-indigo-400"
                   }`}
                 />
               </motion.button>

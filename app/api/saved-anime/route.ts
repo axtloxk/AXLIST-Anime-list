@@ -1,7 +1,33 @@
-// app/api/saved-anime/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getAuthUserId } from "../auth/auth";
+
+export async function GET() {
+  try {
+    const userId = await getAuthUserId();
+
+    if (!userId) {
+      // Return empty array if not logged in
+      return NextResponse.json([]);
+    }
+
+    const savedAnime = await prisma.savedAnime.findMany({
+      where: { userId },
+      select: { animeId: true },
+    });
+
+    // Returns an array of anime IDs e.g. [101, 202, 303]
+    const animeIds = savedAnime.map((item) => item.animeId);
+
+    return NextResponse.json(animeIds);
+  } catch (error) {
+    console.error("[SAVED_ANIME_GET]", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
 
 export async function POST(req: Request) {
   try {

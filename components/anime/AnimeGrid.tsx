@@ -6,6 +6,7 @@ import { Separator } from "../ui/separator";
 import AnimeCard from "./AnimeCard";
 import { Anime } from "@/lib/types/anime";
 import { getAnimeList, FilterType, SortType } from "@/lib/api";
+import { GET } from "@/app/api/saved-anime/route";
 
 export default function AnimeGrid() {
   const ITEMS_PER_PAGE = 25;
@@ -14,6 +15,7 @@ export default function AnimeGrid() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const observerTarget = useRef(null);
+  const [savedIds, setSavedIds] = useState<Set<number | string>>(new Set());
 
   const [type, setType] = useState<FilterType>("all");
   const [sort, setSort] = useState<SortType>("popular");
@@ -82,7 +84,22 @@ export default function AnimeGrid() {
       if (observerTarget.current) observer.unobserve(observerTarget.current);
     };
   }, [isLoading]);
+  // saved ids-fav-animes
+  useEffect(() => {
+    async function fetchSavedIds() {
+      try {
+        const res = await fetch("/api/saved-anime");
+        if (res.ok) {
+          const ids: string | string[] = await res.json();
+          setSavedIds(new Set(ids));
+        }
+      } catch (error) {
+        console.error("Failed to fetch saved IDs", error);
+      }
+    }
 
+    fetchSavedIds();
+  }, []);
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col px-6">
       {/* Filter Bar */}
@@ -119,8 +136,14 @@ export default function AnimeGrid() {
       {/* Grid Container */}
       <div className="mb-6 mt-8 grid grid-cols-2 gap-7 px-0 sm:grid-cols-3 md:grid-cols-4 md:px-4 lg:grid-cols-5">
         {animeList.map((anime, index) => (
-          <AnimeCard key={`${anime.id || anime.slug}-${index}`} anime={anime} />
+          <AnimeCard
+            key={`${anime.id || anime.slug}-${index}`}
+            anime={anime}
+            initialIsSaved={savedIds.has(anime.id)}
+          />
         ))}
+
+        {/* skeleton */}
 
         {isLoading &&
           Array.from({ length: 24 }).map((_, index) => (
