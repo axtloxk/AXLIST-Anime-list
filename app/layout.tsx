@@ -17,8 +17,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  slot,
 }: Readonly<{
   children: React.ReactNode;
+  slot: React.ReactNode;
 }>) {
   return (
     <html
@@ -30,6 +32,7 @@ export default function RootLayout({
         className={`${inter.className} min-h-screen flex flex-col antialiased`}
       >
         {children}
+        {slot}
         <Toaster
           position="bottom-left"
           duration={1200}

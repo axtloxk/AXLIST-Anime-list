@@ -10,7 +10,7 @@ import { Anime } from "@/lib/types/anime";
 interface AnimeCardProps {
   anime: Anime;
   initialIsSaved?: boolean;
-  priority?: boolean; // Prop to eliminate Next.js LCP warnings on top-of-page cards
+  priority?: boolean;
 }
 
 export default function AnimeCard({
@@ -82,7 +82,7 @@ export default function AnimeCard({
       }
     } catch (error) {
       console.error("[TOGGLE_SAVE_ERROR]", error);
-      setIsSaved(previousState); // Revert optimistic UI on failure
+      setIsSaved(previousState);
     } finally {
       setIsLoading(false);
     }

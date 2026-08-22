@@ -29,7 +29,7 @@ export default async function AnimeDetailsPage({
             alt={anime.titleEnglish || anime.title}
             fill
             className="object-cover"
-            priority // Use priority here since the hero image is above the fold
+            priority
             sizes="(max-width: 768px) 100vw, 300px"
           />
 
