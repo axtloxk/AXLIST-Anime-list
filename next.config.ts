@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
+  outputFileTracingIncludes: {
+    "/*": ["./lib/generated/prisma/**/*"],
+  },
   allowedDevOrigins: ["192.168.244.13"],
   // adding images protoc...
   images: {

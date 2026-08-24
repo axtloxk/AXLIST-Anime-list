@@ -1,6 +1,13 @@
 {
   "name": "anime-list",
   "version": "0.1.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "bcrypt"
+    ]
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",
