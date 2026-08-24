@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // output: "standalone",
+  // when it deploys on vercel it doesnt trigger;
+  output: process.env.VERCEL ? undefined : "standalone",
   outputFileTracingIncludes: {
     "/*": ["./lib/generated/prisma/**/*"],
   },
