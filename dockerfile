@@ -13,6 +13,7 @@ COPY . .
 RUN pnpm exec prisma generate
 # Disable Next.js telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
+RUN pnpm approve-builds
 # Build Next.js (Outputs a highly optimized standalone folder)
 RUN pnpm build
 
