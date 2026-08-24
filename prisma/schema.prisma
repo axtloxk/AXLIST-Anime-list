@@ -29,9 +29,3 @@ model SavedAnime {
 
   @@unique([userId, animeId])
 }
-
-// pnpm prisma generate
-
-// pnpm prisma db push
-
-// pnpm prisma migrate dev --name your_change_description
