@@ -16,7 +16,7 @@ export default async function InterceptedAnimePage({
 
   return (
     <div className="fixed inset-0 z-150 bg-background overflow-y-auto min-h-screen ">
-      {/* <ScrollLock /> */}
+      <ScrollLock />
       <main className="container mx-auto px-4 py-8 md:py-12 max-w-6xl text-zinc-100 relative">
         <BackButton />
 
