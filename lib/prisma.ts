@@ -2,11 +2,10 @@ import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const prismaClientSingleton = () => {
-  const dbUrl = process.env.DATABASE_URL;
-
-  if (!dbUrl) {
-    throw new Error("DATABASE_URL is missing at runtime.");
-  }
+  // Use a fallback URL during build time so module evaluation doesn't throw
+  const dbUrl =
+    process.env.DATABASE_URL ||
+    "postgresql://placeholder:placeholder@localhost:5432/placeholder";
 
   const adapter = new PrismaPg({
     connectionString: dbUrl,
