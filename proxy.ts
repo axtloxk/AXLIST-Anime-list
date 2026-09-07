@@ -9,8 +9,7 @@ export function proxy(request: NextRequest) {
   if (!token && pathname.startsWith("/my-list")) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
-
-  // 2. Optional: If user is ALREADY logged in and visits login/register, send them to /my-list
+  // when user logs in automatically direct to my-list
   if (token && (pathname === "/auth/login" || pathname === "/auth/register")) {
     return NextResponse.redirect(new URL("/my-list", request.url));
   }

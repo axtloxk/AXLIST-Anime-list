@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "25");
 
-  // 1. Map your frontend sorts/types to AniList GraphQL Enums
+  // 1. mapping frontend sorts/types to AniList GraphQL Enums
   let sortEnum = "POPULARITY_DESC";
   if (sortParam === "newest") sortEnum = "START_DATE_DESC";
 
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   if (filterType === "tv") formatIn = ["TV", "TV_SHORT"];
   if (filterType === "movie") formatIn = ["MOVIE"];
 
-  // 2. The GraphQL Query - we only ask for exactly what your AnimeCard needs
+  // 2. The GraphQL Query
   const query = `
     query ($page: Int, $perPage: Int, $sort: [MediaSort], $formatIn: [MediaFormat]) {
       Page (page: $page, perPage: $perPage) {
@@ -73,16 +73,15 @@ export async function GET(request: Request) {
 
     const { data } = await res.json();
 
-    // 4. Transform AniList data to match your EXISTING frontend Anime type!
+    // 4. Transform AniList data  to match with frontend
     const transformedList = data.Page.media.map((anime: any) => {
-      // AniList descriptions often have HTML like <br>. This strips it out cleanly.
       const cleanSynopsis = anime.description
         ? anime.description.replace(/<[^>]*>?/gm, "")
         : "No description available.";
 
       return {
         id: anime.id,
-        slug: anime.id.toString(), // AniList uses IDs for routing
+        slug: anime.id.toString(),
         title: anime.title.romaji || anime.title.english,
         titleEnglish: anime.title.english,
         titleJapanese: anime.title.native,
@@ -90,7 +89,6 @@ export async function GET(request: Request) {
         year: anime.startDate?.year,
         episodes: anime.episodes,
         type: anime.format === "MOVIE" ? "Movie" : "TV",
-        // AniList score is 0-100. Divide by 20 to get the 0-5 scale your AnimeCard uses!
         rating: anime.averageScore ? anime.averageScore / 20 : 0,
         synopsis: cleanSynopsis,
         status: anime.status,
@@ -106,7 +104,7 @@ export async function GET(request: Request) {
       hasNextPage: data.Page.pageInfo.hasNextPage,
     });
   } catch (error) {
-    console.error("AniList API Route Error:", error);
+    console.error("api/anime/route.ts  ,AniList API Route Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch anime list" },
       { status: 500 },

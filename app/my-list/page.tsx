@@ -10,7 +10,7 @@ import { getAnimeBySlug } from "@/lib/api";
 
 export default async function MyListPage() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = cookieStore.get("auth_token")?.value; // to verify later on if valid user then conitnue else sign/in/up
 
   if (!token) redirect("/auth/login");
 

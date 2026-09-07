@@ -47,6 +47,7 @@ export async function getAnimeList({
     };
   }
 }
+
 /**
  * Fetches single anime details via internal Next.js API Route handler.
  */
@@ -102,7 +103,7 @@ export async function getAnimeBySlug(idString: string): Promise<any | null> {
       },
       // Convert the string "113415" from the URL back into a number for AniList
       body: JSON.stringify({ query, variables: { id: parseInt(idString) } }),
-      next: { revalidate: 3600 },
+      next: { revalidate: 3600 }, // can i play with this?
     });
 
     if (!res.ok) return null;
@@ -116,7 +117,7 @@ export async function getAnimeBySlug(idString: string): Promise<any | null> {
       ? anime.description.replace(/<[^>]*>?/gm, "")
       : "No description available.";
 
-    // Format the response to perfectly match what your page.tsx expects
+    // formatting the res to math page.tsx card, slug.
     return {
       id: anime.id,
       slug: anime.id.toString(),
