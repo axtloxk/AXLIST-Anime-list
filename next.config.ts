@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: process.env.VERCEL ? undefined : "standalone",
+  // output: process.env.VERCEL ? undefined : "standalone",
   outputFileTracingIncludes: {
     "/*": ["./lib/generated/prisma/**/*"],
   },

@@ -68,8 +68,16 @@ export async function GET(request: Request) {
       body: JSON.stringify({ query, variables }),
       next: { revalidate: 3600 },
     });
+    if (!res.ok) {
+      // Extract the actual error AniList sent back
+      const errorText = await res.text();
+      console.error(`AniList Error (${res.status}):`, errorText);
 
-    if (!res.ok) throw new Error(`AniList fetch failed: ${res.status}`);
+      return NextResponse.json(
+        { error: "AniList fetch failed", details: errorText },
+        { status: res.status }, // Pass the 429 or 400 directly to the client
+      );
+    }
 
     const { data } = await res.json();
 

@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import FilterBar from "./FilterBar";
 import { Separator } from "../ui/separator";
 import AnimeCard from "./AnimeCard";
 import { Anime } from "@/lib/types/anime";
 import { getAnimeList, FilterType, SortType } from "@/lib/api";
-import { GET } from "@/app/api/saved-anime/route";
 
 export default function AnimeGrid() {
   const ITEMS_PER_PAGE = 25;
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const observerTarget = useRef(null);
   const [savedIds, setSavedIds] = useState<Set<number | string>>(new Set());
@@ -20,71 +20,109 @@ export default function AnimeGrid() {
   const [type, setType] = useState<FilterType>("all");
   const [sort, setSort] = useState<SortType>("popular");
 
-  const fetchAnime = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await getAnimeList({ type, sort, page: 1 });
-      setAnimeList(response.data);
-    } catch (err) {
-      console.error("Failed to fetch anime:", err);
-      setError("Failed to load anime. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [type, sort]);
-
+  // 1. Handle Initial Load & Filter Changes (Resets to Page 1)
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchAnime();
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [fetchAnime]);
+    let isMounted = true;
 
-  // fetching pages
-  useEffect(() => {
-    const fetchAnime = async () => {
+    const fetchInitial = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const response = await getAnimeList({
+          type,
+          sort,
+          page: 1,
           limit: ITEMS_PER_PAGE,
-          page: page,
         });
-        // Append new anime to the existing list
-        setAnimeList((prevAnime) => [...prevAnime, ...response.data]);
-      } catch (error) {
-        console.error(error);
+        if (isMounted) {
+          setAnimeList(response.data);
+          setPage(1);
+          setHasNextPage(response.hasNextPage);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error("Failed to fetch anime:", err);
+          setError("Failed to load anime. Please try again later.");
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    fetchAnime();
-  }, [page]);
+    // Debounce filter changes
+    const timeoutId = setTimeout(() => {
+      fetchInitial();
+    }, 500);
 
-  // increasing pages
+    return () => {
+      clearTimeout(timeoutId);
+      isMounted = false; // Cleanup to prevent state updates on unmounted components
+    };
+  }, [type, sort]);
+
+  // 2. Handle Pagination (Triggered by page increments)
   useEffect(() => {
+    // Skip page 1 as it's handled by the filter useEffect above
+    if (page === 1) return;
+
+    let isMounted = true;
+
+    const fetchMore = async () => {
+      setIsLoading(true);
+      try {
+        // Bug fixed: Now passing type and sort to subsequent pages
+        const response = await getAnimeList({
+          type,
+          sort,
+          page,
+          limit: ITEMS_PER_PAGE,
+        });
+        if (isMounted) {
+          setAnimeList((prevAnime) => [...prevAnime, ...response.data]);
+          setHasNextPage(response.hasNextPage);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error(err);
+          // Crucial: Stop paginating if the fetch fails (prevents infinite loop on 500/429 errors)
+          setHasNextPage(false);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchMore();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page, type, sort]);
+
+  // 3. The Intersection Observer
+  useEffect(() => {
+    // Stop the observer entirely if we are loading or have run out of pages
+    if (isLoading || !hasNextPage) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
-        // If the target is visible and we aren't currently loading...
-        if (entries[0].isIntersecting && !isLoading) {
+        if (entries[0].isIntersecting) {
           setPage((prevPage) => prevPage + 1);
         }
       },
-      { threshold: 1.0 },
+      { threshold: 0.1 }, // Lowered to 0.1 so it triggers slightly before hitting the exact bottom pixel
     );
 
     if (observerTarget.current) {
       observer.observe(observerTarget.current);
     }
 
-    // Cleanup function
     return () => {
       if (observerTarget.current) observer.unobserve(observerTarget.current);
     };
-  }, [isLoading]);
-  // saved ids-fav-animes
+  }, [isLoading, hasNextPage]);
+
+  // 4. Fetch Saved IDs
   useEffect(() => {
     async function fetchSavedIds() {
       try {
@@ -93,16 +131,15 @@ export default function AnimeGrid() {
           const ids: string | string[] = await res.json();
           setSavedIds(new Set(ids));
         }
-      } catch (error) {
-        console.error("Failed to fetch saved IDs", error);
+      } catch (err) {
+        console.error("Failed to fetch saved IDs", err);
       }
     }
-
     fetchSavedIds();
   }, []);
+
   return (
     <section className="mx-auto flex w-full max-w-7xl flex-col px-6">
-      {/* Filter Bar */}
       <div className="mt-6 w-full">
         <FilterBar
           currentType={type}
@@ -113,12 +150,11 @@ export default function AnimeGrid() {
       </div>
       <Separator className="mt-3" />
 
-      {/* Error State */}
       {error && (
         <div className="my-12 flex flex-col items-center justify-center text-center">
           <p className="text-sm text-red-400">{error}</p>
           <button
-            onClick={fetchAnime}
+            onClick={() => setPage(1)} // Reset page to trigger a clean retry
             className="mt-3 rounded-md bg-zinc-800 px-4 py-2 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700"
           >
             Retry
@@ -126,14 +162,12 @@ export default function AnimeGrid() {
         </div>
       )}
 
-      {/* Empty State (Not Loading, No Error, No Anime) */}
       {!isLoading && !error && animeList.length === 0 && (
         <div className="my-12 text-center text-zinc-500">
           No anime found matching your selected filters.
         </div>
       )}
 
-      {/* Grid Container */}
       <div className="mb-6 mt-8 grid grid-cols-2 gap-7 px-0 sm:grid-cols-3 md:grid-cols-4 md:px-4 lg:grid-cols-5">
         {animeList.map((anime, index) => (
           <AnimeCard
@@ -143,20 +177,20 @@ export default function AnimeGrid() {
           />
         ))}
 
-        {/* skeleton */}
-
         {isLoading &&
           Array.from({ length: 24 }).map((_, index) => (
             <AnimeCardSkeleton key={`skeleton-${index}`} />
           ))}
       </div>
 
-      {!error && <div ref={observerTarget} className="mb-3 h-10 w-full" />}
+      {/* The observer target now only renders if there is actually a next page */}
+      {!error && hasNextPage && (
+        <div ref={observerTarget} className="mb-3 h-10 w-full" />
+      )}
     </section>
   );
 }
 
-// Loading Skeleton Component with centered loading image
 function AnimeCardSkeleton() {
   return (
     <div className="flex w-full animate-pulse flex-col rounded-lg border pb-4 border-zinc-800 bg-zinc-900/30 p-2">
