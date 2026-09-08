@@ -32,7 +32,7 @@ export default function RootLayout({
         className={`${inter.className} min-h-screen flex flex-col antialiased`}
       >
         {children}
-        {/* {slot} */}
+        {slot}
         <Toaster
           position="bottom-left"
           duration={1200}
