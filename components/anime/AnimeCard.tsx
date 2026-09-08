@@ -117,6 +117,7 @@ export default function AnimeCard({
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                   quality={85}
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-zinc-700 text-xs font-mono uppercase tracking-widest">

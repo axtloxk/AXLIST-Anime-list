@@ -8,7 +8,7 @@ import { Anime } from "@/lib/types/anime";
 import { getAnimeList, FilterType, SortType } from "@/lib/api";
 
 export default function AnimeGrid() {
-  const ITEMS_PER_PAGE = 25;
+  const ITEMS_PER_PAGE = 20;
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -52,7 +52,7 @@ export default function AnimeGrid() {
     // Debounce filter changes
     const timeoutId = setTimeout(() => {
       fetchInitial();
-    }, 500);
+    }, 4000);
 
     return () => {
       clearTimeout(timeoutId);

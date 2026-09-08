@@ -1,19 +1,32 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // output: process.env.VERCEL ? undefined : "standalone",
   outputFileTracingIncludes: {
     "/*": ["./lib/generated/prisma/**/*"],
   },
+
   allowedDevOrigins: ["192.168.244.13"],
-  // adding images protoc...
+
   images: {
     qualities: [75, 85],
+
     remotePatterns: [
-      { protocol: "https", hostname: "s4.anilist.co" },
+      {
+        protocol: "https",
+        hostname: "s4.anilist.co",
+      },
       {
         protocol: "https",
         hostname: "*.anilist.co",
+      },
+      {
+        protocol: "https",
+        hostname: "shikimori.io",
+      },
+      {
+        protocol: "https",
+        hostname: "media.kitsu.app",
+        pathname: "/**",
       },
     ],
   },

@@ -1,3 +1,82 @@
+// export async function getAnimeBySlug(idString: string): Promise<any | null> {
+//   try {
+//     const headers = {
+//       Accept: "application/json",
+//       "User-Agent": "AXLIST-App",
+//     };
+
+//     // 1. Fetch Anime Details
+//     const animeRes = await fetch(`${SHIKIMORI_HOST}/api/animes/${idString}`, {
+//       headers,
+//       next: { revalidate: 3600 },
+//     });
+
+//     if (!animeRes.ok) return null;
+//     const anime = await animeRes.json();
+
+//     // 2. Fetch Characters (Roles)
+//     const rolesRes = await fetch(
+//       `${SHIKIMORI_HOST}/api/animes/${idString}/roles`,
+//       {
+//         headers,
+//         next: { revalidate: 3600 },
+//       },
+//     );
+
+//     let characters = [];
+//     if (rolesRes.ok) {
+//       const rolesData = await rolesRes.json();
+//       characters = rolesData
+//         .filter((r: any) => r.character) // Filter out non-character staff
+//         .slice(0, 4) // Keep to 4 characters to match the AniList layout
+//         .map((r: any) => ({
+//           id: r.character.id,
+//           name: r.character.name,
+//           image: r.character.image?.original
+//             ? `${SHIKIMORI_HOST}${r.character.image.original}`
+//             : "",
+//           role: r.roles?.[0] || "Unknown",
+//         }));
+//     }
+
+//     // Clean up HTML from descriptions
+//     const cleanSynopsis = anime.description_html
+//       ? anime.description_html.replace(/<[^>]*>?/gm, "")
+//       : anime.description
+//         ? anime.description.replace(/<[^>]*>?/gm, "")
+//         : "No description available.";
+
+//     const year = anime.aired_on ? parseInt(anime.aired_on.split("-")[0]) : 0;
+//     const coverImage = anime.image?.original
+//       ? `${SHIKIMORI_HOST}${anime.image.original}`
+//       : "";
+
+//     // Titles logic: Fallback to English, then Romaji (name)
+//     const englishTitle = (anime.english && anime.english[0]) || anime.name;
+//     const japaneseTitle = (anime.japanese && anime.japanese[0]) || undefined;
+
+//     return {
+//       id: anime.id,
+//       slug: anime.id.toString(),
+//       title: englishTitle,
+//       titleEnglish: englishTitle,
+//       titleJapanese: japaneseTitle,
+//       coverImage: coverImage,
+//       year: year,
+//       episodes: anime.episodes || anime.episodes_aired || null,
+//       type: anime.kind === "movie" ? "Movie" : "TV",
+//       rating: anime.score ? parseFloat(anime.score) / 2 : 0,
+//       synopsis: cleanSynopsis,
+//       status: anime.status?.toUpperCase() || "UNKNOWN",
+//       aired: year ? `${year}` : "TBA",
+//       genres: anime.genres ? anime.genres.map((g: any) => g.name) : [],
+//       characters: characters,
+//     };
+//   } catch (error) {
+//     console.error(`Failed to fetch anime data for ID ${idString}:`, error);
+//     return null;
+//   }
+// }
 import { Anime, AnimeFetchResponse } from "@/lib/types/anime";
 
 export type FilterType = "all" | "tv" | "movie";
@@ -10,15 +89,11 @@ interface GetAnimeListParams {
   limit?: number;
 }
 
-/*
- Fetches anime list via internal Next.js API Route handler.
- */
-
 export async function getAnimeList({
   type = "all",
   sort = "popular",
   page = 1,
-  limit = 25,
+  limit = 20,
 }: GetAnimeListParams = {}): Promise<AnimeFetchResponse> {
   try {
     const params = new URLSearchParams({
@@ -34,115 +109,127 @@ export async function getAnimeList({
       throw new Error(`Failed to fetch anime list: ${res.statusText}`);
     }
 
-    // Since our route.ts now returns the EXACT format we need,
     const json = await res.json();
     return json;
   } catch (error) {
     console.error("Error fetching anime list:", error);
-    return {
-      data: [],
-      page: 1,
-      totalPages: 1,
-      hasNextPage: false,
-    };
+    return { data: [], page: 1, totalPages: 1, hasNextPage: false };
   }
 }
 
-/**
- * Fetches single anime details via internal Next.js API Route handler.
- */
-
 export async function getAnimeBySlug(idString: string): Promise<any | null> {
-  const ANILIST_ENDPOINT = "https://graphql.anilist.co";
+  try {
+    const headers = {
+      Accept: "application/vnd.api+json",
+      "Content-Type": "application/vnd.api+json",
+      "User-Agent": "AXLIST-App/1.0 (Mozilla/5.0)",
+    };
 
-  // We use the ID from the URL to fetch the exact anime, plus its characters
-  const query = `
-    query ($id: Int) {
-      Media (id: $id, type: ANIME) {
-        id
-        title {
-          english
-          romaji
-          native
-        }
-        coverImage {
-          extraLarge
-        }
-        startDate {
-          year
-        }
-        episodes
-        format
-        averageScore
-        description
-        status
-        genres
-        characters(sort: [ROLE, RELEVANCE], perPage: 4) {
-          edges {
-            node {
-              id
-              name {
-                full
-              }
-              image {
-                large
-              }
-            }
-          }
+    const isNumericId = /^\d+$/.test(idString);
+    let item: any = null;
+    let animeJson: any = null;
+
+    if (isNumericId) {
+      const res = await fetch(
+        `https://kitsu.io/api/edge/anime/${idString}?include=categories`,
+        { headers, next: { revalidate: 3600 } },
+      );
+      if (res.ok) {
+        animeJson = await res.json();
+        item = animeJson.data;
+      }
+    } else {
+      // 1. Try fetching by slug
+      let res = await fetch(
+        `https://kitsu.io/api/edge/anime?filter[slug]=${idString}&include=categories`,
+        { headers, next: { revalidate: 3600 } },
+      );
+
+      if (res.ok) {
+        animeJson = await res.json();
+        item = animeJson.data?.[0];
+      }
+
+      // 2. Fallback: Try direct ID fetch if slug returned empty array
+      if (!item) {
+        res = await fetch(
+          `https://kitsu.io/api/edge/anime/${idString}?include=categories`,
+          { headers, next: { revalidate: 3600 } },
+        );
+        if (res.ok) {
+          animeJson = await res.json();
+          item = animeJson.data;
         }
       }
     }
-  `;
 
-  try {
-    const res = await fetch(ANILIST_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      // Convert the string "113415" from the URL back into a number for AniList
-      body: JSON.stringify({ query, variables: { id: parseInt(idString) } }),
-      next: { revalidate: 3600 }, // can i play with this?
-    });
+    if (!item) {
+      console.error(`[AXLIST] Anime not found for target: ${idString}`);
+      return null;
+    }
 
-    if (!res.ok) return null;
+    const actualId = item.id;
+    const attr = item.attributes;
+    const included = animeJson.included || [];
 
-    const { data } = await res.json();
-    const anime = data.Media;
-    if (!anime) return null;
+    const genres = included
+      .filter((inc: any) => inc.type === "categories")
+      .map((c: any) => c.attributes.title);
 
-    // Clean up HTML tags from the description
-    const cleanSynopsis = anime.description
-      ? anime.description.replace(/<[^>]*>?/gm, "")
-      : "No description available.";
+    // Fetch Characters
+    const charRes = await fetch(
+      `https://kitsu.io/api/edge/anime/${actualId}/anime-characters?include=character&page[limit]=4`,
+      { headers, next: { revalidate: 3600 } },
+    );
 
-    // formatting the res to math page.tsx card, slug.
+    let characters = [];
+    if (charRes.ok) {
+      const charJson = await charRes.json();
+      const charData = charJson.data || [];
+      const charIncluded = charJson.included || [];
+
+      characters = charData
+        .map((ac: any) => {
+          const charId = ac.relationships?.character?.data?.id;
+          const character = charIncluded.find(
+            (inc: any) => inc.type === "characters" && inc.id === charId,
+          );
+
+          if (!character) return null;
+
+          return {
+            id: character.id,
+            name: character.attributes.name,
+            image: character.attributes.image?.original || "",
+            role: ac.attributes.role || "Unknown",
+          };
+        })
+        .filter(Boolean);
+    }
+
+    const year = attr.startDate ? parseInt(attr.startDate.split("-")[0]) : 0;
+    const rawScore = attr.averageRating ? parseFloat(attr.averageRating) : 0;
+
     return {
-      id: anime.id,
-      slug: anime.id.toString(),
-      title: anime.title.romaji || anime.title.english,
-      titleEnglish: anime.title.english,
-      titleJapanese: anime.title.native,
-      coverImage: anime.coverImage?.extraLarge,
-      year: anime.startDate?.year,
-      episodes: anime.episodes,
-      type: anime.format === "MOVIE" ? "Movie" : "TV",
-      rating: anime.averageScore ? anime.averageScore / 20 : 0,
-      synopsis: cleanSynopsis,
-      status: anime.status,
-      aired: anime.startDate?.year ? `${anime.startDate.year}` : "TBA",
-      genres: anime.genres || [],
-      // Map the nested GraphQL character data into a clean, flat array
-      characters:
-        anime.characters?.edges?.map((edge: any) => ({
-          id: edge.node.id,
-          name: edge.node.name.full,
-          image: edge.node.image.large,
-        })) || [],
+      id: item.id,
+      slug: attr.slug || item.id.toString(),
+      title: attr.canonicalTitle || attr.titles?.en_jp || attr.titles?.en,
+      titleEnglish: attr.titles?.en || attr.canonicalTitle,
+      titleJapanese: attr.titles?.ja_jp || undefined,
+      coverImage: attr.posterImage?.large || attr.posterImage?.original || "",
+      bannerImage: attr.coverImage?.large || attr.coverImage?.original || "",
+      year: year,
+      episodes: attr.episodeCount || null,
+      type: attr.subtype === "movie" ? "Movie" : "TV",
+      rating: attr.averageRating ? Math.round((rawScore / 20) * 10) / 10 : 0,
+      synopsis: attr.synopsis || "No description available.",
+      status: attr.status?.toUpperCase() || "UNKNOWN",
+      aired: year ? `${year}` : "TBA",
+      genres: genres,
+      characters: characters,
     };
   } catch (error) {
-    console.error(`Failed to fetch anime data for ID ${idString}:`, error);
+    console.error(`Failed to fetch anime data for ID/Slug ${idString}:`, error);
     return null;
   }
 }
